@@ -78,7 +78,7 @@ if [[ -f "$CERTIFICATE" ]]
 then
     TLSA="openssl x509 -in \"$CERTIFICATE\" $TLSA"
 else
-    TLSA="echo \"$CERTIFICATE\" openssl x509 $TLSA"
+    TLSA="echo \"\$CERTIFICATE\" | openssl x509 $TLSA"
 fi
 
 TLSA=$(eval $TLSA | hexdump -ve '/1 "%02x"')
