@@ -74,9 +74,14 @@ then
     TLSA="$TLSA | openssl dgst $DIGEST -binary"
 fi
 
-TLSA="openssl x509 -in \"$CERTIFICATE\" $TLSA | hexdump -ve '/1 \"%02x\"'"
+if [[ -f "$CERTIFICATE" ]]
+then
+    TLSA="openssl x509 -in \"$CERTIFICATE\" $TLSA"
+else
+    TLSA="echo \"$CERTIFICATE\" openssl x509 $TLSA"
+fi
 
-TLSA=$(eval $TLSA)
+TLSA=$(eval $TLSA | hexdump -ve '/1 "%02x"')
 
 #
 # (0) PKIX-TA: Matches a trusted root or intermediate CA.
