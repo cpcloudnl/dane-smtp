@@ -51,3 +51,10 @@ In the case of selector 1 (public key): Not hashing can be considered.
 On a certificate renewal, the TLSA record could require an update.
 
 <hr />
+
+#### RFC7672 recommends to use DANE-TA or DANE-EE with DNSSEC.
+> ... but for the particular case of email communications we have the RFC7672, which describes the application of DANE and DNSSEC to communications (SMTP) between MTAs. In particular the RFC7672 recommends to use DANE-TA or DANE-EE with DNSSEC.
+
+https://mecsa.jrc.ec.europa.eu/en/technical#dane
+
+<hr />
