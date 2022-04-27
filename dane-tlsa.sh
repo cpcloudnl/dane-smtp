@@ -84,15 +84,15 @@ fi
 TLSA=$(eval $TLSA | hexdump -ve '/1 "%02x"')
 
 #
-# (0) PKIX-TA: Matches a trusted root or intermediate CA.
-# (1) PKIX-EE: Matches a valid certificate by a trusted root CA.
+# (2) DANE-TA: Root or intermediate CA (can be self-signed).
+# (3) DANE-EE: End certificate (can be self-signed).
 #
-# @see https://en.wikipedia.org/wiki/DNS-based_Authentication_of_Named_Entities#Certificate_usage
 # @see https://datatracker.ietf.org/doc/html/rfc6698#section-2.1.1
+# @see https://datatracker.ietf.org/doc/html/rfc7671#section-4
 #
 if [[ -z "$USAGE" ]]
 then
-    USAGE="1"
+    USAGE="3"
 fi
 
 if [[ -z "$DOMAIN" ]]
@@ -102,7 +102,7 @@ fi
 
 if [[ -z "$PORT" ]]
 then
-    PORT="443"
+    PORT="25"
 fi
 
 if [[ -z "$PROTOCOL" ]]
