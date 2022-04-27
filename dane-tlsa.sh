@@ -39,7 +39,7 @@ fi
 # @see https://datatracker.ietf.org/doc/html/rfc6698#appendix-A.1.2.2
 # @see https://datatracker.ietf.org/doc/html/rfc7671#section-5.2.1 (and 5.1)
 #
-if [[ "$USAGE" === "2" ]]
+if [[ "$USAGE" == "2" ]]
 then
     SELECTOR="0"
 else
