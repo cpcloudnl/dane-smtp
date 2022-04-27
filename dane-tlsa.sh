@@ -20,6 +20,7 @@ fi
 #
 # @see https://datatracker.ietf.org/doc/html/rfc6698#section-2.1.1
 # @see https://datatracker.ietf.org/doc/html/rfc7671#section-4
+# @see https://datatracker.ietf.org/doc/html/rfc7671#section-12
 #
 if [[ -z "$USAGE" ]]
 then
