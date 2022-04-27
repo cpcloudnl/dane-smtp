@@ -1,9 +1,8 @@
 #!/bin/bash
 #
-# $ bash dane-tlsa.sh "/path/to/cert.pem" 0|1
+# $ bash dane-tlsa.sh "/path/to/cert.pem"
 #
 CERTIFICATE="$1"
-SELECTOR="$2"
 
 # Matching type SHA2-256(1) is chosen because all DANE implementations are
 # required to support SHA2-256.
@@ -16,18 +15,35 @@ then
 fi
 
 #
-# Using selector type 0 is a better option from a security perspective.
+# (2) DANE-TA: Root or intermediate CA (can be self-signed).
+# (3) DANE-EE: End certificate (can be self-signed).
+#
+# @see https://datatracker.ietf.org/doc/html/rfc6698#section-2.1.1
+# @see https://datatracker.ietf.org/doc/html/rfc7671#section-4
+#
+if [[ -z "$USAGE" ]]
+then
+    USAGE="3"
+fi
+
+#
+# TLSA Publishers employing DANE-TA(2) records SHOULD publish records with
+# a selector of Cert(0). Otherwise selector SPKI(1) is chosen because it
+# is compatible with raw public keys [RFC7250] and the resulting TLSA
+# record needs no change across certificate renewals with the same key.
 #
 # (0) Full certificate: the Certificate binary structure as defined in [RFC5280]
 # (1) SubjectPublicKeyInfo: DER-encoded binary structure as defined in [RFC5280]
 #
 # @see https://datatracker.ietf.org/doc/html/rfc6698#section-2.1.2
 # @see https://datatracker.ietf.org/doc/html/rfc6698#appendix-A.1.2.2
+# @see https://datatracker.ietf.org/doc/html/rfc7671#section-5.2.1 (and 5.1)
 #
-if [[ "$SELECTOR" != "0" && "$SELECTOR" != "1" ]]
+if [[ "$USAGE" === "2" ]]
 then
-    >&2 echo "ERROR: Selector must be: '1' (public key) or '0' (full cert.), got: '$SELECTOR'"
-    exit
+    SELECTOR="0"
+else
+    SELECTOR="1"
 fi
 
 #
@@ -87,17 +103,7 @@ fi
 
 TLSA=$(eval $TLSA | hexdump -ve '/1 "%02x"')
 
-#
-# (2) DANE-TA: Root or intermediate CA (can be self-signed).
-# (3) DANE-EE: End certificate (can be self-signed).
-#
-# @see https://datatracker.ietf.org/doc/html/rfc6698#section-2.1.1
-# @see https://datatracker.ietf.org/doc/html/rfc7671#section-4
-#
-if [[ -z "$USAGE" ]]
-then
-    USAGE="3"
-fi
+###
 
 if [[ -z "$DOMAIN" ]]
 then
