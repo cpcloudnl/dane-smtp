@@ -2,6 +2,7 @@
 ## Generates a DNS TLSA-record for DANE
 [RFC6698](https://datatracker.ietf.org/doc/html/rfc6698)
 / [RFC7671](https://datatracker.ietf.org/doc/html/rfc7671)
+/ [RFC7672](https://datatracker.ietf.org/doc/html/rfc7672)
 / [MECSA](https://mecsa.jrc.ec.europa.eu/en/technical#dane)
 
 Bash script to print the suggested TLSA-record.
