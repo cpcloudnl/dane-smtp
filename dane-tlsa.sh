@@ -50,33 +50,26 @@ fi
 # Having the record use the same hash algorithm that was used in the certs
 # signature will assist clients that support a small number of algorithms.
 #
-# (0) Exact match on selected content: No hash used [RFC 6698]
 # (1) SHA256 hash of selected content: SHA-256 [RFC 6234]
 # (2) SHA512 hash of selected content: SHA-512 [RFC 6234]
 #
 # @see https://datatracker.ietf.org/doc/html/rfc6698#section-2.1.3
 # @see https://datatracker.ietf.org/doc/html/rfc7671#section-5.1
+# @see https://datatracker.ietf.org/doc/html/rfc7671#section-10.1.2
 #
-if [[ -z "$USEHASH" ]]
+if [[ "$USEHASH" != "SHA512" && "$USEHASH" != "SHA256" ]]
 then
-    # Exact match.
-    DIGEST=""
-    MATCHTYPE="0"
-else
-    if [[ "$USEHASH" != "SHA512" && "$USEHASH" != "SHA256" ]]
-    then
-        >&2 echo "ERROR: Hash must be: 'SHA256', 'SHA512' or undefined, got: '$USEHASH'"
-        exit
-    fi
+    >&2 echo "ERROR: Hash must be: 'SHA256' or 'SHA512', got: '$USEHASH'"
+    exit
+fi
 
-    if [[ "$USEHASH" == "SHA512" ]]
-    then
-        DIGEST="-sha512"
-        MATCHTYPE="2"
-    else
-        DIGEST="-sha256"
-        MATCHTYPE="1"
-    fi
+if [[ "$USEHASH" == "SHA512" ]]
+then
+    DIGEST="-sha512"
+    MATCHTYPE="2"
+else
+    DIGEST="-sha256"
+    MATCHTYPE="1"
 fi
 
 #
@@ -87,12 +80,7 @@ then
     TLSA="-noout -pubkey | openssl pkey -pubin "
 fi
 
-TLSA="$TLSA-outform DER"
-
-if [[ ! -z "$DIGEST" ]]
-then
-    TLSA="$TLSA | openssl dgst $DIGEST -binary"
-fi
+TLSA="$TLSA-outform DER | openssl dgst $DIGEST -binary"
 
 if [[ -f "$CERTIFICATE" ]]
 then
