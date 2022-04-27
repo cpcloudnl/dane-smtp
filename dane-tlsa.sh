@@ -1,10 +1,13 @@
 #!/bin/bash
 #
-# $ bash dane-tlsa.sh "/path/to/cert.pem" 0|1 [ SHA256|SHA512 ]
+# $ bash dane-tlsa.sh "/path/to/cert.pem" 0|1
 #
 CERTIFICATE="$1"
 SELECTOR="$2"
-USEHASH="$3"
+
+# Matching type SHA2-256(1) is chosen because all DANE implementations are
+# required to support SHA2-256.
+USEHASH="SHA256"
 
 if [[ -z "$CERTIFICATE" ]]
 then
@@ -36,6 +39,7 @@ fi
 # (2) SHA512 hash of selected content: SHA-512 [RFC 6234]
 #
 # @see https://datatracker.ietf.org/doc/html/rfc6698#section-2.1.3
+# @see https://datatracker.ietf.org/doc/html/rfc7671#section-5.1
 #
 if [[ -z "$USEHASH" ]]
 then
