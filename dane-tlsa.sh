@@ -86,21 +86,21 @@ fi
 #
 # openssl
 #
-if [[ "$SELECTOR" == "1" ]]
-then
-    TLSA="-noout -pubkey | openssl pkey -pubin "
-fi
-
-TLSA="$TLSA-outform DER | openssl dgst $DIGEST -binary"
-
 if [[ -f "$CERTIFICATE" ]]
 then
-    TLSA="openssl x509 -in \"$CERTIFICATE\" $TLSA"
+    TLSA="openssl x509 -in \"$CERTIFICATE\""
 else
-    TLSA="echo \"\$CERTIFICATE\" | openssl x509 $TLSA"
+    TLSA="echo \"\$CERTIFICATE\" | openssl x509"
 fi
 
+if [[ "$SELECTOR" == "1" ]]
+then
+    TLSA="$TLSA -noout -pubkey | openssl pkey -pubin"
+fi
+
+TLSA="$TLSA -outform DER | openssl dgst $DIGEST -binary"
 TLSA=$(eval $TLSA | hexdump -ve '/1 "%02x"')
+TLSA=$(echo "$TLSA" | tr '[:lower:]' '[:upper:]')
 
 ###
 
@@ -119,4 +119,4 @@ then
     PROTOCOL="tcp"
 fi
 
-echo "_$PORT._$PROTOCOL.$DOMAIN. IN TLSA $USAGE $SELECTOR $MATCHTYPE $TLSA"
+echo "_$PORT._$PROTOCOL.$DOMAIN. 300 IN TLSA $USAGE $SELECTOR $MATCHTYPE $TLSA"
