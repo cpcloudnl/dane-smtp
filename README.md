@@ -52,9 +52,16 @@ On a certificate renewal, the TLSA record could require an update.
 
 <hr />
 
-#### RFC7672 recommends to use DANE-TA or DANE-EE with DNSSEC.
+#### Use DANE-TA or DANE-EE with DNSSEC.
 > ... but for the particular case of email communications we have the RFC7672, which describes the application of DANE and DNSSEC to communications (SMTP) between MTAs. In particular the RFC7672 recommends to use DANE-TA or DANE-EE with DNSSEC.
 
 https://mecsa.jrc.ec.europa.eu/en/technical#dane
+
+> ... With PKIX-TA(0) and PKIX-EE(1), the
+   validation of peer certificate chains requires additional
+   preconfigured CA TAs that are mutually trusted by the operators of
+   the TLS server and client.
+
+https://datatracker.ietf.org/doc/html/rfc7671#section-4
 
 <hr />
