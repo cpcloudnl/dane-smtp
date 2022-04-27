@@ -4,10 +4,6 @@
 #
 CERTIFICATE="$1"
 
-# Matching type SHA2-256(1) is chosen because all DANE implementations are
-# required to support SHA2-256.
-USEHASH="SHA256"
-
 if [[ -z "$CERTIFICATE" ]]
 then
     >&2 echo "ERROR: No path to certificate defined."
@@ -15,15 +11,23 @@ then
 fi
 
 #
-# (2) DANE-TA: Root or intermediate CA (can be self-signed).
-# (3) DANE-EE: End certificate (can be self-signed).
+# TLSA records for the port 25 SMTP service used by client MTAs SHOULD NOT
+# include TLSA RRs with certificate usage PKIX-TA(0) or PKIX-EE(1). SMTP client
+# MTAs cannot be expected to be configured with a complete set of public CAs.
+#
+# (2) DANE-TA: Root or intermediate CA.
+# (3) DANE-EE: End certificate.
 #
 # @see https://datatracker.ietf.org/doc/html/rfc6698#section-2.1.1
-# @see https://datatracker.ietf.org/doc/html/rfc7671#section-4
-# @see https://datatracker.ietf.org/doc/html/rfc7671#section-12
+# @see https://datatracker.ietf.org/doc/html/rfc7671#section-4 (and 12)
+# @see https://datatracker.ietf.org/doc/html/rfc7672#section-3.1.2
 #
 if [[ -z "$USAGE" ]]
 then
+    # SMTP servers that rely on certificate usage DANE-TA(2) TLSA records
+    # for TLS authentication MUST include the TA certificate as part of the
+    # certificate chain presented in the TLS handshake server certificate
+    # message even when it is a self-signed root certificate.
     USAGE="3"
 fi
 
@@ -55,21 +59,27 @@ fi
 # (2) SHA512 hash of selected content: SHA-512 [RFC 6234]
 #
 # @see https://datatracker.ietf.org/doc/html/rfc6698#section-2.1.3
-# @see https://datatracker.ietf.org/doc/html/rfc7671#section-5.1
-# @see https://datatracker.ietf.org/doc/html/rfc7671#section-10.1.2
+# @see https://datatracker.ietf.org/doc/html/rfc7671#section-5.1 (and 10.1.2)
 #
-if [[ "$USEHASH" != "SHA512" && "$USEHASH" != "SHA256" ]]
+# Matching type SHA2-256(1) is chosen because all DANE implementations are
+# required to support SHA2-256. Not using a hash is NOT RECOMMENDED.
+#
+DIGEST="-sha256"
+#
+# When SHA256 becomes to weak, both SHA256 and SHA512 can be used.
+# Until that time it seems better to only use SHA256 because a client
+# does not necessarily implement the agility as expected. It also does
+# not add any additional security as long as SHA256 is not a weak hash.
+# The agility, in future uses, will use the strongest supported algo
+# when the set of records contains two records for both the algorithms.
+#
+# @see https://datatracker.ietf.org/doc/html/rfc7671#section-9
+# @see https://crypto.stackexchange.com/a/52572
+#
+if [[ "$DIGEST" == "-sha512" ]]
 then
-    >&2 echo "ERROR: Hash must be: 'SHA256' or 'SHA512', got: '$USEHASH'"
-    exit
-fi
-
-if [[ "$USEHASH" == "SHA512" ]]
-then
-    DIGEST="-sha512"
     MATCHTYPE="2"
 else
-    DIGEST="-sha256"
     MATCHTYPE="1"
 fi
 
