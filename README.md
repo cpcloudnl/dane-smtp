@@ -1,21 +1,23 @@
-# DANE: TLSA DNS-record
-## Generates a DNS TLSA-record for DANE
-[RFC6698](https://datatracker.ietf.org/doc/html/rfc6698)
-/ [RFC7671](https://datatracker.ietf.org/doc/html/rfc7671)
-/ [RFC7672](https://datatracker.ietf.org/doc/html/rfc7672)
-/ [MECSA](https://mecsa.jrc.ec.europa.eu/en/technical#dane)
+# SMTP Security via DANE: TLSA DNS-record
 
-Bash script to print the suggested TLSA-record.
+#### Finds the mail server for a domain and validates the record:
+
+```bash
+$ bash validate-dane-tlsa.sh "example.com"
+```
+
+#### Prints the suggested TLSA-record:
 
 ```bash
 $ bash dane-tlsa.sh "/path/to/cert.pem"
 ```
 
-### Considerations:
+<hr />
 
-#### Use a low TTL
-On a certificate renewal, the TLSA record could require an update.
+[RFC6698](https://datatracker.ietf.org/doc/html/rfc6698)
+/ [RFC7671](https://datatracker.ietf.org/doc/html/rfc7671)
+/ [RFC7672](https://datatracker.ietf.org/doc/html/rfc7672)
+/ [MECSA](https://mecsa.jrc.ec.europa.eu/en/technical#dane)
 
-#### Key Rollover with Fixed TLSA Parameters
+#### Key Rollover with Fixed TLSA Parameters:
 https://datatracker.ietf.org/doc/html/rfc7671#section-8.1
-
