@@ -38,7 +38,7 @@ With a TLSA record in your DNS; A sending server can verify the certificate that
 * ```SHA-256(1)``` SHA2-256 hash
 * ```SHA-512(2)``` SHA2-512 hash
 
-> Always use SHA-256(1). ~~Optionally use both hashes with [Digest Algorithm Agility](https://datatracker.ietf.org/doc/html/rfc7672#section-5)~~. Do [NOT](https://datatracker.ietf.org/doc/html/rfc7671#section-10.1.2) use a matching type of Full(0).
+> Always use SHA-256(1). ~~Optionally use both hashes with [Digest Algorithm Agility](https://datatracker.ietf.org/doc/html/rfc7672#section-5)~~. Do [NOT](https://datatracker.ietf.org/doc/html/rfc7671#section-10.1.2) use type Full(0).
 
 ### 4. Certificate Association Data
 
@@ -57,8 +57,8 @@ $ bash ...
 
 Email that you send, will search for the TLSA records of the receivers MX-domain. When a record is found, your server will start a TLS connection and verify the certificate it receives.
 
-* [Configure Postfix mailserver](https://github.com/your-host/toolbox-wiki/blob/patch-1/DANE-for-SMTP-how-to-Postfix.md)
-* [Configure Exim mailserver](https://github.com/your-host/toolbox-wiki/blob/patch-1/DANE-for-SMTP-how-to-Exim.md)
+* [Configuring Postfix mailserver](https://github.com/your-host/toolbox-wiki/blob/patch-1/DANE-for-SMTP-how-to-Postfix.md)
+* [Configuring Exim mailserver](https://github.com/your-host/toolbox-wiki/blob/patch-1/DANE-for-SMTP-how-to-Exim.md)
 
 # SMTP Security via DANE: TLSA DNS-record
 
