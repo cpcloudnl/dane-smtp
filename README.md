@@ -12,12 +12,12 @@ Use DANE to start and verify secure SMTP connections between MTAs. This mitigate
 * Your mail server has support for STARTTLS.
 * Your domain (and mail server domain) are using DNSSEC.
 
-👉 DANE for inbound email means [publishing a DNS record](#tlsa-resource-record).
+👉 DANE for email that is sent to you means [publishing a DNS record](#tlsa-resource-record).
 
 #### Outbound email:
 * Your mail server has support for DANE.
 
-👉 DANE for outbound email means [configuring your mailserver](#configuring-mail-server).
+👉 DANE for email that you send to others means [configuring your mailserver](#configuring-mail-server).
 
 ### How DANE works:
 DANE initiates a TLS connection. A server that wants to send you an email receives the certificate from your mailserver.
