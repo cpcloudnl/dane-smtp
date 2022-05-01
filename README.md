@@ -1,20 +1,34 @@
 # DANE TLS: DNS-Based Authentication
 
-Use DANE to verify secure SMTP connections between MTAs (to mitigate an MITM-attack).
+Use DANE to start and verify secure SMTP connections between MTAs. This mitigates an MITM-attack.
 
 [RFC6698](https://datatracker.ietf.org/doc/html/rfc6698)
 / [RFC7671](https://datatracker.ietf.org/doc/html/rfc7671)
 / [RFC7672](https://datatracker.ietf.org/doc/html/rfc7672)
 
-DANE initiates a TLS connection. By opening that secure connection, the sending server receives a certificate.
-DANE verifies that certificate by searching for a match in the set of TLSA-records in the DNS. One of those records must match the sent certificate in order to succeed.
+### Prerequisites
 
-The domain found in the MX-record is used to connect with STARTTLS on TCP port 25.
+#### Inbound email:
+* Your mail server has support for STARTTLS.
+* Your domain (and mail server domain) are using DNSSEC.
+
+👉 DANE for inbound email means [publishing a DNS record](#tlsa-resource-record).
+
+#### Outbound email:
+* Your mail server has support for DANE.
+
+👉 DANE for outbound email means [configuring your mailserver](#configuring-mail-server).
+
+### How DANE works:
+DANE initiates a TLS connection. A server that wants to send you an email receives the certificate from your mailserver.
+DANE verifies that certificate by searching for a match in the set of TLSA-records (in the DNS). One of those records must match in order to succeed.
+
+The domain in the MX-record is used to connect with TLS on TCP port 25.
 
 ## TLSA Resource Record 
 
 With a TLSA record in your DNS; A sending server can verify the certificate that it receives.
-<br> The record consists of the following 4 fields:
+<br> The DNS-record consists of the following 4 fields:
 
 ### 1. Certificate Usage
 * ~~```PKIX-TA(0)```~~
@@ -38,7 +52,7 @@ With a TLSA record in your DNS; A sending server can verify the certificate that
 * ```SHA-256(1)``` SHA2-256 hash
 * ```SHA-512(2)``` SHA2-512 hash
 
-> Always use SHA-256(1). ~~Optionally use both hashes with [Digest Algorithm Agility](https://datatracker.ietf.org/doc/html/rfc7672#section-5)~~. Do [NOT](https://datatracker.ietf.org/doc/html/rfc7671#section-10.1.2) use type Full(0).
+> Always use SHA-256(1). It is the only one required. ~~Optionally use both hashes with [Digest Algorithm Agility](https://datatracker.ietf.org/doc/html/rfc7672#section-5)~~. Do [NOT](https://datatracker.ietf.org/doc/html/rfc7671#section-10.1.2) use type Full(0).
 
 ### 4. Certificate Association Data
 
@@ -53,14 +67,15 @@ $ bash ...
 
 ...
 
-## Configure your mail server
+## Configuring mail server
 
 Email that you send, will search for the TLSA records of the receivers MX-domain. When a record is found, your server will start a TLS connection and verify the certificate it receives.
 
 * [Configuring Postfix mailserver](https://github.com/your-host/toolbox-wiki/blob/patch-1/DANE-for-SMTP-how-to-Postfix.md)
 * [Configuring Exim mailserver](https://github.com/your-host/toolbox-wiki/blob/patch-1/DANE-for-SMTP-how-to-Exim.md)
 
-# SMTP Security via DANE: TLSA DNS-record
+<hr />
+<hr />
 
 #### Finds the mail server for a domain and validates the record:
 
