@@ -15,6 +15,9 @@ fi
 # include TLSA RRs with certificate usage PKIX-TA(0) or PKIX-EE(1). SMTP client
 # MTAs cannot be expected to be configured with a complete set of public CAs.
 #
+# Postfix: https://github.com/vdukhovni/postfix/blob/master/postfix/src/tls/tls_dane.c#L521
+# Exim: https://github.com/Exim/exim/blob/master/src/src/dane-openssl.c#L1108
+#
 # (2) DANE-TA: Root or intermediate CA.
 # (3) DANE-EE: End certificate.
 #
