@@ -1,30 +1,30 @@
-# DANE TLS: DNS-Based Authentication of Named Entities
+# DANE TLS: DNS-Based Authentication
 
-Use DANE to secure SMTP connections between MTAs.
+Use DANE to verify secure SMTP connections between MTAs (to mitigate an MITM-attack).
 
 [RFC6698](https://datatracker.ietf.org/doc/html/rfc6698)
 / [RFC7671](https://datatracker.ietf.org/doc/html/rfc7671)
 / [RFC7672](https://datatracker.ietf.org/doc/html/rfc7672)
 
-DANE validates a secure connection. A secure connection to a mail server sends a certificate.
-DANE verifies that certificate by searching for a match in the DNS records. The TLSA-records are a set of records. One of the records must match the sent certificate in order to succeed.
+DANE initiates a TLS connection. By opening that secure connection, the sending server receives a certificate.
+DANE verifies that certificate by searching for a match in the set of TLSA-records in the DNS. One of those records must match the sent certificate in order to succeed.
 
-The domain found in the DNS MX-record is used to connect with STARTTLS on TCP port 25.
+The domain found in the MX-record is used to connect with STARTTLS on TCP port 25.
 
 ## TLSA Resource Record 
 
 With a TLSA record in your DNS; A sending server can verify the certificate that it receives.
-<br> The record consists of the following fields:
+<br> The record consists of the following 4 fields:
 
-### Certificate Usage
+### 1. Certificate Usage
 * ~~```PKIX-TA(0)```~~
 * ~~```PKIX-EE(1)```~~
-* ```DANE-TA(2)``` Intermediate Certificate (when you are an email [SaaS-provider](#use-dane-ta-if-you-are-a-saas-provider))
-* ```DANE-EE(3)``` End Entity Certificate (also called host or server certificate)
+* ```DANE-TA(2)``` Intermediate Certificate
+* ```DANE-EE(3)``` End Entity Certificate
 
 > Do [NOT](https://datatracker.ietf.org/doc/html/rfc7672#section-3.1.3) use PKIX-TA(0) and PKIX-EE(1).
 
-### Selector
+### 2. Selector
 * ```Cert(0)``` Full Certificate
 * ```SPKI(1)``` Subject Public Key Info
 
@@ -33,16 +33,16 @@ With a TLSA record in your DNS; A sending server can verify the certificate that
   is compatible with raw public keys [RFC7250] and the resulting TLSA
   record needs no change across certificate renewals with the same key.
 
-### Matching Type
+### 3. Matching Type
 * ~~```Full(0)```~~
-* ```SHA-256(1)``` SHA2-256 hash (always use this)
-* ```SHA-512(2)``` SHA2-512 hash (only add if required, then use both with [Digest Algorithm Agility](https://datatracker.ietf.org/doc/html/rfc7672#section-5))
+* ```SHA-256(1)``` SHA2-256 hash
+* ```SHA-512(2)``` SHA2-512 hash
 
-> Do [NOT](https://datatracker.ietf.org/doc/html/rfc7671#section-10.1.2) use matching type of Full(0).
+> Always use SHA-256(1). ~~Optionally use both hashes with [Digest Algorithm Agility](https://datatracker.ietf.org/doc/html/rfc7672#section-5)~~. Do [NOT](https://datatracker.ietf.org/doc/html/rfc7671#section-10.1.2) use a matching type of Full(0).
 
-### Certificate Association Data
+### 4. Certificate Association Data
 
-> Hashed value of the Certificate or Public Key.
+> Contains the hashed value of the Certificate or Public Key.
 
 ## Walkthrough
 
@@ -56,6 +56,9 @@ $ bash ...
 ## Configure your mail server
 
 Email that you send, will search for the TLSA records of the receivers MX-domain. When a record is found, your server will start a TLS connection and verify the certificate it receives.
+
+* [Configure Postfix mailserver](https://github.com/your-host/toolbox-wiki/blob/patch-1/DANE-for-SMTP-how-to-Postfix.md)
+* [Configure Exim mailserver](https://github.com/your-host/toolbox-wiki/blob/patch-1/DANE-for-SMTP-how-to-Exim.md)
 
 # SMTP Security via DANE: TLSA DNS-record
 
