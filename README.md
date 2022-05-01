@@ -60,10 +60,26 @@ With a TLSA record in your DNS; A sending server can verify the certificate that
 
 ## Walkthrough
 
-#### Find the MX-records:
+#### Finds the mail servers of a domain (MX-records):
 ```bash
-$ bash ...
+$ dig +short MX "example.com"
 ```
+
+#### Opens a TLS connection to a mail server:
+```bash
+$ openssl s_client -connect "mail.example.com:25" -starttls smtp </dev/null
+```
+> The query above will show you the certificate that is being used.
+> When using DANE-TA(2) you need to make sure that you send that Trust Anchor as well. Otherwise there is no value (cfr. certificate) to compare. Therefor verification will never pass.
+
+#### Opens a TLS connection to a mail server (with SNI):
+```bash
+$ openssl s_client -connect "mail.example.com:25" -starttls smtp -servername "mail.example.com" </dev/null
+```
+
+> When the certificate is different in the two queries above: Make sure you add a TLSA record for both certificates. Servers that do not support SNI will receive the certificate from the first openssl query (because it is the fallback certificate).
+
+> Prefer using the hostname of the IPv4 (the reverse DNS). In this case all servers (with or without SNI) will receive the same certificate.
 
 ...
 
