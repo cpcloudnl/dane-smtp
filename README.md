@@ -3,6 +3,7 @@
 Use DANE to start and verify secure SMTP connections between MTAs. This mitigates an MITM-attack.
 
 [RFC6698](https://datatracker.ietf.org/doc/html/rfc6698)
+/ [RFC7218](https://tools.ietf.org/html/rfc7218)
 / [RFC7671](https://datatracker.ietf.org/doc/html/rfc7671)
 / [RFC7672](https://datatracker.ietf.org/doc/html/rfc7672)
 
@@ -167,3 +168,9 @@ $ bash dane-tlsa.sh "/path/to/cert.pem"
 
 #### Key Rollover with Fixed TLSA Parameters:
 https://datatracker.ietf.org/doc/html/rfc7671#section-8.1
+
+<hr />
+
+Sources:
+* https://mecsa.jrc.ec.europa.eu/en/technical#dane
+* https://github.com/internetstandards/toolbox-wiki/
