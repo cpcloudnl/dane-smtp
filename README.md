@@ -34,8 +34,6 @@ Replace the value of ```<your SHA2-256 hash>``` with the value of your own certi
 * Multiple mailservers on the _same_ domain need a TLSA record for each of their subdomains.
 * Multiple mailservers on a _different_ domain need a TLSA record in each of their zone.
 
-Each server should have it's own certificate and therefor have a unique hash in each of their TLSA-records.
-
 The DNS-record consists of the following 4 fields:
 
 ### 1. Certificate Usage
