@@ -8,12 +8,12 @@ Use DANE to start and verify secure SMTP connections between MTAs. This mitigate
 * Your mail server [has support](#opens-a-tls-connection-to-a-mail-server) for STARTTLS.
 * Your domain (and mail server domain) are using [DNSSEC](https://dnsviz.net/).
 
-👉 DANE for email that is sent to you means [publishing a DNS record](#tlsa-resource-record).
+👉 DANE for email you receive = [publishing a DNS record](#tlsa-resource-record).
 
 #### Outbound email:
 * Your mail server has support for DANE.
 
-👉 DANE for email that you send to others means [configuring your mailserver](#configuring-mail-server).
+👉 DANE for email you send = [configuring your mailserver](#configuring-mail-server).
 
 ### How DANE works:
 DANE first gets the TLSA-records from the DNS. When one or more valid records are found: The mailserver will start a TLS connection. Opening that connection returns a certificate. That certificate must match one of those TLSA-records.
@@ -22,16 +22,17 @@ The domain in the MX-record is used to connect with TLS on TCP port 25.
 
 ## TLSA Resource Record 
 
-With a TLSA record in your DNS; A sending server can verify the certificate that it receives.
+With a TLSA record in your DNS; A server that wants to send to you can verify the certificate that it receives.
 
-In summary, you probably want to use the following pattern: DANE-EE(3), SPKI(1), SHA-256(1)
+👉  Don't really care? Use: DANE-EE(3), SPKI(1), SHA-256(1):
 ```
 _25._tcp.mail.example.com. 300 IN TLSA 3 1 1 <your SHA2-256 hash>
 ```
 Replace the value of ```<your SHA2-256 hash>``` with the [hashed value](#generate-the-sha2-256-hash-based-on-the-spki) of your own certificate.
 <br> Replace ```mail.example.com``` with your own (sub)domain.
-* Mailservers on the same domain (server1.mailserver.com, server2.mailserver.com) need a TLSA record for each of their subdomains.
+* Mailservers on the same domain (one.server.com, two.server.com) need a TLSA record for each of their subdomains.
 * Mailservers on a different domain (mailserver.com, backup-server.com) both need a TLSA record in their own zone.
+* Beware of servers that use SNI: Add two TLSA-records when the server in the MX-record is not using the default certificate.
 
 The DNS-record consists of the following 4 fields:
 
@@ -43,7 +44,19 @@ The DNS-record consists of the following 4 fields:
 
 > Do [NOT](https://datatracker.ietf.org/doc/html/rfc7672#section-3.1.3) use PKIX-TA(0) and PKIX-EE(1). [Postfix discards](https://github.com/vdukhovni/postfix/blob/master/postfix/src/tls/tls_dane.c#L521) those records. [Exim seems to support](https://github.com/Exim/exim/blob/master/src/src/dane-openssl.c#L1108) PKIX but there is [no added security](https://datatracker.ietf.org/doc/html/rfc7671#section-4) when an application supports all four certificate usages. You only need more DNS-records and possibly run into the issue of a mail server (sending to you) [not having](https://datatracker.ietf.org/doc/html/rfc7672#section-3.1.3) that root or intermediate.
 
-> Consider DANE-TA(2) when you are that Root or Intermediate. It makes no sense to use a public authority like Let's Encrypt (e.g: X1 or R3). If you are using Let's Encrypt, you want to use your server certificate, thus DANE-EE(3).
+> The use of a public authority e.g: "Let's Encrypt" with DANE-TA(2) records opens you up to
+various risks of certificate mis-issuance, because Let's Encrypt
+operates on a TOFU (trust on first use) model, with rather weak
+proofs of domain control. Some users are willing to accept this risk for the convenience of using
+Let's Encrypt, enabling a single certificate to support both MTA-to-MTA
+SMTP and MUA-to-MTA submission, ...  Others prefer to avoid the security risks.
+Google have their own dedicated intermediate CA, they can use a
+DANE-TA(2) record for that CA without much risk.  A company with
+a corporate account with a CA and managed enrollment (no TOFU)
+might do likewise.
+><br>— by Viktor Dukhovni (May 03, 2022)
+
+> 👉 Prefer DANE-EE(3). Consider DANE-TA(2) when you are that Root or Intermediate.
 
 ### 2. Selector
 * ```Cert(0)``` Full Certificate
@@ -54,6 +67,8 @@ The DNS-record consists of the following 4 fields:
   is compatible with raw public keys [RFC7250] and the resulting TLSA
   record needs no change across certificate renewals when issued with the same key.
 
+> 👉 Use SPKI(1) with DANE-EE(3). Use Cert(0) with DANE-TA(2).
+
 ### 3. Matching Type
 * ~~```Full(0)```~~
 * ```SHA-256(1)``` SHA2-256 hash
@@ -61,9 +76,9 @@ The DNS-record consists of the following 4 fields:
 
 > Always use SHA-256(1). Do [NOT](https://datatracker.ietf.org/doc/html/rfc7671#section-10.1.2) use type Full(0).
 > In the future you want to use [both of these hashes](https://datatracker.ietf.org/doc/html/rfc7672#section-5).
-> When SHA2-512 becomes mandatory for applications to implement (as defined in future RFCs): You would be using that mandatory algorithm(s) only.
+> When SHA2-512 (and any upcoming algorithms) become mandatory for applications to implement (as defined in future RFCs). Then you would be using those mandatory algorithm(s) only.
 
-> In summary: Use SHA-256 for now. Care about SHA-512 (and any upcoming algorithms) later.
+> 👉 Use SHA-256 for now. Care about SHA-512 later.
 
 ### 4. Certificate Association Data
 
@@ -123,20 +138,20 @@ In the command above, replace ```/path/to/ca.pem``` with the location of your ro
 ### DNS-record:
 The recommended: DANE-EE(3) with SPKI(1) and SHA256(1) would result in a DNS-record e.g:
 ```
-_25._tcp.your-mail-server.com. IN TLSA 3 1 1 <sha256-hash>"
+_25._tcp.your-mail-server.com. IN TLSA 3 1 1 <sha256-hash>
 ```
 And optionally a DNS-record for the backup server:
 ```
-_25._tcp.your-backup-mail-server.com. IN TLSA 3 1 1 <sha256-hash>"
+_25._tcp.your-backup-mail-server.com. IN TLSA 3 1 1 <sha256-hash>
 ```
 DANE-TA(2) with FullCert(0) and SHA256(1) would result in a DNS-record:
 ```
-_25._tcp.your-mail-server.com. IN TLSA 2 0 1 <sha256-hash>"
+_25._tcp.your-mail-server.com. IN TLSA 2 0 1 <sha256-hash>
 ```
 DANE-TA(2) with [Digest Algorithm Agility](https://datatracker.ietf.org/doc/html/rfc7672#section-5) would result in two DNS-records:
 ```
-_25._tcp.your-mail-server.com. IN TLSA 2 0 1 <sha256-hash>"
-_25._tcp.your-mail-server.com. IN TLSA 2 0 2 <sha512-hash>"
+_25._tcp.your-mail-server.com. IN TLSA 2 0 1 <sha256-hash>
+_25._tcp.your-mail-server.com. IN TLSA 2 0 2 <sha512-hash>
 ```
 > Consider the use of Digest Algorithm Agility when SHA2-256 becomes weak.
 
