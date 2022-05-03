@@ -89,7 +89,7 @@ Then you want to add a TLSA record for each of these servers in their own zone.
 $ openssl s_client -connect "your-mail-server.com:25" -starttls smtp </dev/null
 ```
 > The command above prints the certificate that is being used.
-> When using DANE-TA(2) you need to make sure that you send that Trust Anchor as well. Otherwise there is no value (cfr. certificate) to compare. Therefor verification will never pass.
+> When using DANE-TA(2) you need to make sure that you send that Trust Anchor as well (you would be sending the full chain in stead of a single certificate). Otherwise there is no value (cfr. certificate) to compare. Therefor verification will never pass.
 
 #### Opens a TLS connection to a mail server (with SNI):
 ```bash
