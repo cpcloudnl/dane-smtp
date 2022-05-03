@@ -16,8 +16,7 @@ Use DANE to start and verify secure SMTP connections between MTAs. This mitigate
 👉 DANE for email that you send to others means [configuring your mailserver](#configuring-mail-server).
 
 ### How DANE works:
-DANE initiates a TLS connection. A server that wants to send you an email receives the certificate from your mailserver.
-DANE verifies that certificate by searching for a match in the set of TLSA-records (in the DNS). One of those records must match in order to succeed.
+DANE first gets the TLSA-records from the DNS. When one or more valid records are found: The mailserver will start a TLS connection. Opening that connection returns a certificate. That certificate must match one of those TLSA-records.
 
 The domain in the MX-record is used to connect with TLS on TCP port 25.
 
