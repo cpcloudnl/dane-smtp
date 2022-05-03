@@ -2,11 +2,6 @@
 
 Use DANE to start and verify secure SMTP connections between MTAs. This mitigates an MITM-attack.
 
-[RFC6698](https://datatracker.ietf.org/doc/html/rfc6698)
-/ [RFC7218](https://tools.ietf.org/html/rfc7218)
-/ [RFC7671](https://datatracker.ietf.org/doc/html/rfc7671)
-/ [RFC7672](https://datatracker.ietf.org/doc/html/rfc7672)
-
 ### Prerequisites
 
 #### Inbound email:
@@ -37,7 +32,9 @@ _25._tcp.mail.example.com. 300 IN TLSA 3 1 1 <your SHA2-256 hash>
 Replace the value of ```<your SHA2-256 hash>``` with the value of your own certificate.
 <br> Replace ```mail.example.nl``` with your own (sub)domain.
 * Multiple mailservers on the _same_ domain need a TLSA record for each of their subdomains.
-* Multiple mailservers on a _different_ domain need a TLSA record in each of their zone. With a hash of their own certificate.
+* Multiple mailservers on a _different_ domain need a TLSA record in each of their zone.
+
+Each server should have it's own certificate and therefor have a unique hash in each of their TLSA-records.
 
 The DNS-record consists of the following 4 fields:
 
@@ -47,9 +44,9 @@ The DNS-record consists of the following 4 fields:
 * ```DANE-TA(2)``` Trust Anchor — Root or Intermediate Certificate
 * ```DANE-EE(3)``` End Entity Certificate
 
-> Do [NOT](https://datatracker.ietf.org/doc/html/rfc7672#section-3.1.3) use PKIX-TA(0) and PKIX-EE(1).
+> Do [NOT](https://datatracker.ietf.org/doc/html/rfc7672#section-3.1.3) use PKIX-TA(0) and PKIX-EE(1). Postfix discards the records. Exim seems to support PKIX but there is no added security when an application supports all four certificate usages. You would only need more DNS-records and possibly run into the issue of a mailserver (sending to you) not having that root or intermediate certificate.
 
-> Consider DANE-TA(2) when you are that Root or Intermediate. It makes no sense to use a public authority like Let's Encrypt (X1/R3).
+> Consider DANE-TA(2) when you are that Root or Intermediate. It makes no sense to use a public authority like Let's Encrypt (e.g: X1 or R3). In that case you only want to use your server certificate, thus DANE-EE(3).
 
 ### 2. Selector
 * ```Cert(0)``` Full Certificate
@@ -58,18 +55,22 @@ The DNS-record consists of the following 4 fields:
 > TLSA Publishers employing DANE-TA(2) records SHOULD publish records with
   a selector of "Cert(0)". Otherwise SPKI(1) is recommended because it
   is compatible with raw public keys [RFC7250] and the resulting TLSA
-  record needs no change across certificate renewals with the same key.
+  record needs no change across certificate renewals when issued with the same key.
 
 ### 3. Matching Type
 * ~~```Full(0)```~~
 * ```SHA-256(1)``` SHA2-256 hash
 * ```SHA-512(2)``` SHA2-512 hash
 
-> Always use SHA-256(1). It is the only one required. ~~Optionally use both hashes with [Digest Algorithm Agility](https://datatracker.ietf.org/doc/html/rfc7672#section-5)~~. Do [NOT](https://datatracker.ietf.org/doc/html/rfc7671#section-10.1.2) use type Full(0).
+> Always use SHA-256(1). Do [NOT](https://datatracker.ietf.org/doc/html/rfc7671#section-10.1.2) use type Full(0).
+> In the future you want to use [both of these hashes](https://datatracker.ietf.org/doc/html/rfc7672#section-5).
+> When SHA2-512 becomes mandatory for applications to implement (as defined in future RFCs): You would be using that mandatory algorithm(s) only.
+
+> In summary: Use SHA-256 for now. Care about SHA-512 (and any upcoming algorithms) later.
 
 ### 4. Certificate Association Data
 
-> Contains the hashed value of the Certificate or Public Key.
+> Contains the value of the Certificate or Public Key. In this case the SHA2-256 hash of the Cert(0) or SPKI(1).
 
 ### Walkthrough:
 
@@ -89,7 +90,7 @@ Then you want to add a TLSA record for each of these servers in their own zone.
 ```bash
 $ openssl s_client -connect "your-mail-server.com:25" -starttls smtp </dev/null
 ```
-> The command above will show you the certificate that is being used.
+> The command above prints the certificate that is being used.
 > When using DANE-TA(2) you need to make sure that you send that Trust Anchor as well. Otherwise there is no value (cfr. certificate) to compare. Therefor verification will never pass.
 
 #### Opens a TLS connection to a mail server (with SNI):
@@ -111,7 +112,7 @@ echo $(openssl x509 -in "/path/to/cert.pem" -noout -pubkey \
 | openssl sha256 -binary \
 | hexdump -ve '/1 "%02x"')
 ```
-In the command above, replace ```/path/to/cert.pem``` with the location of your end certificate.
+In the command above, replace ```/path/to/cert.pem``` with the location of your servers end certificate.
 
 #### Generate the [SHA2-256](#3-matching-type) hash based on the [Full Certificate](#2-selector):
 > DANE-TA(2) [should](https://datatracker.ietf.org/doc/html/rfc7672#section-3.1.2) use the "Full certificate(0)" selector in stead of the "SPKI(1)". Such TLSA records are associated with the whole trust anchor certificate, not just with the trust anchor public key. Otherwise this may, for example, allow a subsidiary CA to issue a chain that violates the trust anchor's path length or name constraints.
@@ -123,24 +124,24 @@ echo $(openssl x509 -in "/path/to/ca.pem" -outform DER \
 In the command above, replace ```/path/to/ca.pem``` with the location of your root or intermediate certificate.
 
 ### DNS-record:
-DANE-EE(3) with SPKI(1) and SHA256(1) would result in a DNS-record e.g:
+The recommended: DANE-EE(3) with SPKI(1) and SHA256(1) would result in a DNS-record e.g:
 ```
-_25._tcp.your-mail-server.com. IN TLSA 3 1 1 <hash>"
+_25._tcp.your-mail-server.com. IN TLSA 3 1 1 <sha256-hash>"
 ```
 And optionally a DNS-record for the backup server:
 ```
-_25._tcp.your-backup-mail-server.com. IN TLSA 3 1 1 <hash>"
+_25._tcp.your-backup-mail-server.com. IN TLSA 3 1 1 <sha256-hash>"
 ```
-DANE-TA(2) with FullCert(0) and SHA256(1) would result in a DNS-record e.g:
+DANE-TA(2) with FullCert(0) and SHA256(1) would result in a DNS-record:
 ```
-_25._tcp.your-mail-server.com. IN TLSA 2 0 1 <hash>"
+_25._tcp.your-mail-server.com. IN TLSA 2 0 1 <sha256-hash>"
 ```
-DANE-TA(2) with Digest Algorithm Agility would result in two DNS-records e.g:
+DANE-TA(2) with [Digest Algorithm Agility](https://datatracker.ietf.org/doc/html/rfc7672#section-5) would result in two DNS-records:
 ```
 _25._tcp.your-mail-server.com. IN TLSA 2 0 1 <sha256-hash>"
 _25._tcp.your-mail-server.com. IN TLSA 2 0 2 <sha512-hash>"
 ```
-> Consider the use of Digest Algorithm Agility when SHA2-256 becomes to weak. Until that time you probably just want to use a single record containing the SHA2-256 hash. You always want to implement the 256-bit hash.
+> Consider the use of Digest Algorithm Agility when SHA2-256 becomes weak.
 
 ## Configuring mail server
 
@@ -172,5 +173,9 @@ https://datatracker.ietf.org/doc/html/rfc7671#section-8.1
 <hr />
 
 Sources:
+* [RFC6698](https://tools.ietf.org/html/rfc6698)
+* [RFC7218](https://tools.ietf.org/html/rfc7218)
+* [RFC7671](https://tools.ietf.org/html/rfc7671)
+* [RFC7672](https://tools.ietf.org/html/rfc7672)
 * https://mecsa.jrc.ec.europa.eu/en/technical#dane
 * https://github.com/internetstandards/toolbox-wiki/
