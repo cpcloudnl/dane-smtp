@@ -42,7 +42,7 @@ The DNS-record consists of the following 4 fields:
 * ```DANE-TA(2)``` Trust Anchor — Root or Intermediate Certificate
 * ```DANE-EE(3)``` End Entity Certificate
 
-> Do [NOT](https://datatracker.ietf.org/doc/html/rfc7672#section-3.1.3) use PKIX-TA(0) and PKIX-EE(1). [Postfix discards](https://github.com/vdukhovni/postfix/blob/master/postfix/src/tls/tls_dane.c#L521) those records. [Exim seems to support](https://github.com/Exim/exim/blob/master/src/src/dane-openssl.c#L1108) PKIX but there is [no added security](https://datatracker.ietf.org/doc/html/rfc7671#section-4) when an application supports all four certificate usages. You only need more DNS-records and possibly run into the issue of a mailserver (sending to you) [not having](https://datatracker.ietf.org/doc/html/rfc7672#section-3.1.3) that root or intermediate certificate.
+> Do [NOT](https://datatracker.ietf.org/doc/html/rfc7672#section-3.1.3) use PKIX-TA(0) and PKIX-EE(1). [Postfix discards](https://github.com/vdukhovni/postfix/blob/master/postfix/src/tls/tls_dane.c#L521) those records. [Exim seems to support](https://github.com/Exim/exim/blob/master/src/src/dane-openssl.c#L1108) PKIX but there is [no added security](https://datatracker.ietf.org/doc/html/rfc7671#section-4) when an application supports all four certificate usages. You only need more DNS-records and possibly run into the issue of a mail server (sending to you) [not having](https://datatracker.ietf.org/doc/html/rfc7672#section-3.1.3) that root or intermediate.
 
 > Consider DANE-TA(2) when you are that Root or Intermediate. It makes no sense to use a public authority like Let's Encrypt (e.g: X1 or R3). If you are using Let's Encrypt, you want to use your server certificate, thus DANE-EE(3).
 
