@@ -31,7 +31,7 @@ _25._tcp.mail.example.com. 300 IN TLSA 3 1 1 <your SHA2-256 hash>
 Replace the value of ```<your SHA2-256 hash>``` with the [hashed value](#generate-the-sha2-256-hash-based-on-the-spki) of your own certificate.
 <br> Replace ```mail.example.com``` with your own (sub)domain.
 * Mailservers on the same domain (server1.mailserver.com, server2.mailserver.com) need a TLSA record for each of their subdomains.
-* Mailservers on a different domain (mailserver.com, backup-server.com) need a TLSA record in each of their zone.
+* Mailservers on a different domain (mailserver.com, backup-server.com) both need a TLSA record in their own zone.
 
 The DNS-record consists of the following 4 fields:
 
