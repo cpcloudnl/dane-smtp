@@ -29,7 +29,7 @@ In summary, you probably want to use the following pattern: DANE-EE(3), SPKI(1),
 _25._tcp.mail.example.com. 300 IN TLSA 3 1 1 <your SHA2-256 hash>
 ```
 Replace the value of ```<your SHA2-256 hash>``` with the [hashed value](#generate-the-sha2-256-hash-based-on-the-spki) of your own certificate.
-<br> Replace ```mail.example.nl``` with your own (sub)domain.
+<br> Replace ```mail.example.com``` with your own (sub)domain.
 * Mailservers on the same domain (server1.mailserver.com, server2.mailserver.com) need a TLSA record for each of their subdomains.
 * Mailservers on a different domain (mailserver.com, backup-server.com) need a TLSA record in each of their zone.
 
