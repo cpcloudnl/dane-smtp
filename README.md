@@ -1,11 +1,11 @@
-# DANE TLS: DNS-Based Authentication
+# SMTP Security via Opportunistic DNS-Based Authentication of Named Entities (DANE) Transport Layer Security (TLS)
 
-Use DANE to start and verify secure SMTP connections between MTAs. This mitigates an MITM-attack.
+Use DANE to start and verify secure SMTP connections between MTAs (or MUA-to-MTA submission). This mitigates an MITM-attack.
 
 ### Prerequisites
 
 #### Inbound email:
-* Your mail server [has support](#opens-a-tls-connection-to-a-mail-server) for STARTTLS.
+* Your mail server [supports](#opens-a-tls-connection-to-a-mail-server) STARTTLS.
 * Your domain (and mail server domain) are using [DNSSEC](https://dnsviz.net/).
 
 👉 DANE for email you receive = [publishing a DNS record](#tlsa-resource-record).
@@ -16,9 +16,9 @@ Use DANE to start and verify secure SMTP connections between MTAs. This mitigate
 👉 DANE for email you send = [configuring your mailserver](#configuring-mail-server).
 
 ### How DANE works:
-DANE first gets the TLSA-records from the DNS. When one or more valid records are found: The mailserver will start a TLS connection. Opening that connection returns a certificate. That certificate must match one of those TLSA-records.
+DANE first looks up the TLSA-records in the DNS. When one or more valid records are found: The mailserver will start a TLS connection. [Opening that connection](#opens-a-tls-connection-to-a-mail-server) returns a certificate. That certificate must match one of those TLSA-records.
 
-The domain in the MX-record is used to connect with TLS on TCP port 25.
+The FQDN in the [MX-record](#finds-the-mail-servers-of-a-domain-mx-records) is used to connect with TLS on TCP port 25.
 
 ## TLSA Resource Record 
 
@@ -26,10 +26,13 @@ With a TLSA record in your DNS; A server that wants to send to you can verify th
 
 👉  Don't really care? Use: DANE-EE(3), SPKI(1), SHA-256(1):
 ```
-_25._tcp.mail.example.com. 300 IN TLSA 3 1 1 <your SHA2-256 hash>
+_25._tcp.server.example.com. 300 IN TLSA 3 1 1 <your SHA2-256 hash>
 ```
 Replace the value of ```<your SHA2-256 hash>``` with the [hashed value](#generate-the-sha2-256-hash-based-on-the-spki) of your own certificate.
-<br> Replace ```mail.example.com``` with your own (sub)domain.
+<br> Replace ```server.example.com``` with your own (sub)domain.
+
+![](cloudflare-dns.png)
+
 * Mailservers on the same domain (one.server.com, two.server.com) need a TLSA record for each of their subdomains.
 * Mailservers on a different domain (mailserver.com, backup-server.com) both need a TLSA record in their own zone.
 * Beware of servers that use SNI: Add two TLSA-records when the server in the MX-record is not using the default certificate.
