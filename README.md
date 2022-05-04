@@ -1,6 +1,6 @@
 # SMTP Security via Opportunistic DNS-Based Authentication of Named Entities (DANE) Transport Layer Security (TLS)
 
-Use DANE to start and verify secure SMTP connections between MTAs (or MUA-to-MTA submission). This mitigates an MITM-attack.
+Use DANE to start and verify secure SMTP connections between MTAs (or MUA-to-MTA submission). This mitigates a MITM-attack.
 
 ### Prerequisites
 
@@ -24,7 +24,7 @@ The FQDN in the [MX-record](#finds-the-mail-servers-of-a-domain-mx-records) is u
 
 With a TLSA record in your DNS; A server that wants to send to you can verify the certificate that it receives.
 
-👉  Don't really care? Use: DANE-EE(3), SPKI(1), SHA-256(1):
+👉  You probably want to use: DANE-EE(3), SPKI(1), SHA-256(1):
 ```
 _25._tcp.server.example.com. 300 IN TLSA 3 1 1 <your SHA2-256 hash>
 ```
